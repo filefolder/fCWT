@@ -103,12 +103,9 @@ public:
     void getWavelet(float scale, complex<float>* pwav, int pn) override;
     float value_at(float a, float b) override;
     float constant() override;
-
-    float getFB() const { return fb; }  // Getter for fb
-    void setFB(float value) { fb = value; }  // Setter for fb, if necessary
+    float fb;
     
 private:
-    float fb;
     float ifb, fb2;
 };
 
