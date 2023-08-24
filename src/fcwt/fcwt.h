@@ -76,6 +76,8 @@ enum SCALETYPE {FCWT_LINSCALES,FCWT_LOGSCALES,FCWT_LINFREQS};
 
 class Wavelet {
 public:
+    virtual float value_at(float a, float b) = 0;
+    virtual float constant() = 0;
     Wavelet() {};
     virtual void generate(float* real, float* imag, int size, float scale) { printf("ERROR [generate time complex]: Override this virtual class"); };
     virtual void generate(int size) { printf("ERROR [generate freq]: Override this virtual class"); };
@@ -90,6 +92,8 @@ public:
 
 class Morlet : public Wavelet {
 public:
+    float value_at(float a, float b) override;
+    float constant() override;
     FCWT_LIBRARY_API Morlet(float bandwidth); //frequency domain
     ~Morlet() { free(mother); };
     
@@ -135,6 +139,7 @@ public:
     void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, complex<float>* poutput, Scales *scales);
     void FCWT_LIBRARY_API cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
     void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
+    void FCWT_LIBRARY_API icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
 
     Wavelet *wavelet;
     

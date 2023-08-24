@@ -547,3 +547,40 @@ void FCWT::cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>
     cwt(pinput,psize,poutput,scales);
 }
 
+void FCWT::icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales) {
+    // Placeholder for inverse CWT implementation
+    complex<float> morlet_conj;
+
+    // Loop over all scales and translations to reconstruct the signal
+    for (int a = 0; a < scales->size; a++) {
+        for (int b = 0; b < psize; b++) {
+            // Compute the Morlet wavelet complex conjugate at this scale and translation
+            morlet_conj = conj(wavelet->value_at(a, b));  // Assuming a method 'value_at' exists in Wavelet class
+            
+            // Use the Morlet wavelet function and its complex conjugate to compute contributions
+            // to the reconstructed signal at each scale and translation
+            preconstructed[b] += real(ptransform[b * scales->size + a] * morlet_conj) / (a * a);
+        }
+    }
+
+    // Normalize the reconstructed signal
+    float normalization_factor = 1.0f / (wavelet->constant() * scales->size);  // Assuming a method 'constant' exists in Wavelet class
+    for (int i = 0; i < psize; i++) {
+        preconstructed[i] *= normalization_factor;
+    }
+}
+
+float Morlet::value_at(float a, float b) {
+    float toradians = (2 * PI) / (float)width;
+    float norm = sqrt(2 * PI) * IPI4;
+    float tmp1 = (2.0f * (b * toradians) * fb - 2.0f * PI * fb);
+    tmp1 = -(tmp1 * tmp1) / 2;
+    return (norm * exp(tmp1));
+}
+
+float Morlet::constant() {
+    // Placeholder for the normalization constant for the Morlet wavelet
+    // This value can be obtained from wavelet literature or computed empirically
+    return 0.75112554f;  // This should be close but may differ slightly depending on freq... TODO
+
+}

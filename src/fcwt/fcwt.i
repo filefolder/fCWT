@@ -15,6 +15,7 @@ import_array();
 
 %rename(cwt) cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
 %rename(ccwt) cwt(complex<float>*pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
+void icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
 
 %numpy_typemaps(complex<double> , NPY_CDOUBLE, int)
 %numpy_typemaps(complex<float> , NPY_CFLOAT , int)
@@ -56,6 +57,8 @@ public:
     void generate(float* real, float* imag, int size, float scale); //time domain
     int getSupport(float scale) { return (int)(fb*scale*3.0f); };
     void getWavelet(float scale, complex<float>* pwav, int pn);
+    float value_at(float a, float b);
+    float constant();
     float fb;
 };
 
