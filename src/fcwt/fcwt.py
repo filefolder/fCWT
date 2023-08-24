@@ -58,18 +58,21 @@ class _SwigNonDynamicMeta(type):
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
 
 
-
-def icwt(ptransform, psize, preconstructed, scales):
-    return _fcwt.icwt(ptransform, psize, preconstructed, scales)
 FCWT_LINSCALES = _fcwt.FCWT_LINSCALES
 FCWT_LOGSCALES = _fcwt.FCWT_LOGSCALES
 FCWT_LINFREQS = _fcwt.FCWT_LINFREQS
 class Wavelet(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+
+    def __init__(self, *args, **kwargs):
+        raise AttributeError("No constructor defined - class is abstract")
     __repr__ = _swig_repr
 
-    def __init__(self):
-        _fcwt.Wavelet_swiginit(self, _fcwt.new_Wavelet())
+    def value_at(self, a, b):
+        return _fcwt.Wavelet_value_at(self, a, b)
+
+    def constant(self):
+        return _fcwt.Wavelet_constant(self)
 
     def generate(self, *args):
         return _fcwt.Wavelet_generate(self, *args)

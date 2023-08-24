@@ -552,19 +552,19 @@ void FCWT::icwt(complex<float>* ptransform, int psize, float* preconstructed, Sc
     complex<float> morlet_conj;
 
     // Loop over all scales and translations to reconstruct the signal
-    for (int a = 0; a < scales->size; a++) {
+    for (int a = 0; a < scales->nscales; a++) {
         for (int b = 0; b < psize; b++) {
             // Compute the Morlet wavelet complex conjugate at this scale and translation
             morlet_conj = conj(wavelet->value_at(a, b));  // Assuming a method 'value_at' exists in Wavelet class
             
             // Use the Morlet wavelet function and its complex conjugate to compute contributions
             // to the reconstructed signal at each scale and translation
-            preconstructed[b] += real(ptransform[b * scales->size + a] * morlet_conj) / (a * a);
+            preconstructed[b] += real(ptransform[b * scales->nscales + a] * morlet_conj) / (a * a);
         }
     }
 
     // Normalize the reconstructed signal
-    float normalization_factor = 1.0f / (wavelet->constant() * scales->size);  // Assuming a method 'constant' exists in Wavelet class
+    float normalization_factor = 1.0f / (wavelet->constant() * scales->nscales);  // Assuming a method 'constant' exists in Wavelet class
     for (int i = 0; i < psize; i++) {
         preconstructed[i] *= normalization_factor;
     }

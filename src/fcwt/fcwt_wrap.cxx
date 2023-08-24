@@ -2986,10 +2986,9 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_Scales swig_types[2]
 #define SWIGTYPE_p_Wavelet swig_types[3]
 #define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_complexT_float_t swig_types[5]
-#define SWIGTYPE_p_float swig_types[6]
-static swig_type_info *swig_types[8];
-static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
+#define SWIGTYPE_p_float swig_types[5]
+static swig_type_info *swig_types[7];
+static swig_module_info swig_module = {swig_types, 6, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3155,13 +3154,56 @@ namespace swig {
 #include <string>
 
 
-#include <limits.h>
-#if !defined(SWIG_NO_LLONG_MAX)
-# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
-#   define LLONG_MAX __LONG_LONG_MAX__
-#   define LLONG_MIN (-LLONG_MAX - 1LL)
-#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
+}
+
+
+#include <float.h>
+
+
+#include <math.h>
+
+
+/* Getting isfinite working pre C99 across multiple platforms is non-trivial. Users can provide SWIG_isfinite on older platforms. */
+#ifndef SWIG_isfinite
+/* isfinite() is a macro for C99 */
+# if defined(isfinite)
+#  define SWIG_isfinite(X) (isfinite(X))
+# elif defined(__cplusplus) && __cplusplus >= 201103L
+/* Use a template so that this works whether isfinite() is std::isfinite() or
+ * in the global namespace.  The reality seems to vary between compiler
+ * versions.
+ *
+ * Make sure namespace std exists to avoid compiler warnings.
+ *
+ * extern "C++" is required as this fragment can end up inside an extern "C" { } block
+ */
+namespace std { }
+extern "C++" template<typename T>
+inline int SWIG_isfinite_func(T x) {
+  using namespace std;
+  return isfinite(x);
+}
+#  define SWIG_isfinite(X) (SWIG_isfinite_func(X))
+# elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+#  define SWIG_isfinite(X) (__builtin_isfinite(X))
+# elif defined(_MSC_VER)
+#  define SWIG_isfinite(X) (_finite(X))
+# elif defined(__sun) && defined(__SVR4)
+#  include <ieeefp.h>
+#  define SWIG_isfinite(X) (finite(X))
 # endif
+#endif
+
+
+/* Accept infinite as a valid float value unless we are unable to check if a value is finite */
+#ifdef SWIG_isfinite
+# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX) && SWIG_isfinite(X))
+#else
+# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX))
 #endif
 
 
@@ -3211,10 +3253,40 @@ SWIG_AsVal_double (PyObject *obj, double *val)
 }
 
 
-#include <float.h>
+SWIGINTERN int
+SWIG_AsVal_float (PyObject * obj, float *val)
+{
+  double v;
+  int res = SWIG_AsVal_double (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if (SWIG_Float_Overflow_Check(v)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = static_cast< float >(v);
+    }
+  }  
+  return res;
+}
 
 
-#include <math.h>
+  #define SWIG_From_double   PyFloat_FromDouble 
+
+
+SWIGINTERNINLINE PyObject *
+SWIG_From_float  (float value)
+{    
+  return SWIG_From_double  (value);
+}
+
+
+#include <limits.h>
+#if !defined(SWIG_NO_LLONG_MAX)
+# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
+#   define LLONG_MAX __LONG_LONG_MAX__
+#   define LLONG_MIN (-LLONG_MAX - 1LL)
+#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+# endif
+#endif
 
 
 SWIGINTERNINLINE int
@@ -3300,69 +3372,6 @@ SWIG_AsVal_int (PyObject * obj, int *val)
       return SWIG_OverflowError;
     } else {
       if (val) *val = static_cast< int >(v);
-    }
-  }  
-  return res;
-}
-
-
-SWIGINTERNINLINE PyObject*
-  SWIG_From_int  (int value)
-{
-  return PyInt_FromLong((long) value);
-}
-
-
-/* Getting isfinite working pre C99 across multiple platforms is non-trivial. Users can provide SWIG_isfinite on older platforms. */
-#ifndef SWIG_isfinite
-/* isfinite() is a macro for C99 */
-# if defined(isfinite)
-#  define SWIG_isfinite(X) (isfinite(X))
-# elif defined(__cplusplus) && __cplusplus >= 201103L
-/* Use a template so that this works whether isfinite() is std::isfinite() or
- * in the global namespace.  The reality seems to vary between compiler
- * versions.
- *
- * Make sure namespace std exists to avoid compiler warnings.
- *
- * extern "C++" is required as this fragment can end up inside an extern "C" { } block
- */
-namespace std { }
-extern "C++" template<typename T>
-inline int SWIG_isfinite_func(T x) {
-  using namespace std;
-  return isfinite(x);
-}
-#  define SWIG_isfinite(X) (SWIG_isfinite_func(X))
-# elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
-#  define SWIG_isfinite(X) (__builtin_isfinite(X))
-# elif defined(_MSC_VER)
-#  define SWIG_isfinite(X) (_finite(X))
-# elif defined(__sun) && defined(__SVR4)
-#  include <ieeefp.h>
-#  define SWIG_isfinite(X) (finite(X))
-# endif
-#endif
-
-
-/* Accept infinite as a valid float value unless we are unable to check if a value is finite */
-#ifdef SWIG_isfinite
-# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX) && SWIG_isfinite(X))
-#else
-# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX))
-#endif
-
-
-SWIGINTERN int
-SWIG_AsVal_float (PyObject * obj, float *val)
-{
-  double v;
-  int res = SWIG_AsVal_double (obj, &v);
-  if (SWIG_IsOK(res)) {
-    if (SWIG_Float_Overflow_Check(v)) {
-      return SWIG_OverflowError;
-    } else {
-      if (val) *val = static_cast< float >(v);
     }
   }  
   return res;
@@ -3842,16 +3851,6 @@ SWIG_AsVal_float (PyObject * obj, float *val)
 
 
 
-  #define SWIG_From_double   PyFloat_FromDouble 
-
-
-SWIGINTERNINLINE PyObject *
-SWIG_From_float  (float value)
-{    
-  return SWIG_From_double  (value);
-}
-
-
 SWIGINTERN int
 SWIG_AsVal_bool (PyObject *obj, bool *val)
 {
@@ -4028,58 +4027,61 @@ SWIG_AsPtr_std_string (PyObject * obj, std::string **val)
 #ifdef __cplusplus
 extern "C" {
 #endif
-SWIGINTERN PyObject *_wrap_icwt(PyObject *self, PyObject *args) {
+SWIGINTERN PyObject *_wrap_Wavelet_value_at(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
-  complex< float > *arg1 = (complex< float > *) 0 ;
-  int arg2 ;
-  float *arg3 = (float *) 0 ;
-  Scales *arg4 = (Scales *) 0 ;
+  Wavelet *arg1 = (Wavelet *) 0 ;
+  float arg2 ;
+  float arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int val2 ;
+  float val2 ;
   int ecode2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  PyObject *swig_obj[4] ;
+  float val3 ;
+  int ecode3 = 0 ;
+  PyObject *swig_obj[3] ;
+  float result;
   
-  if (!SWIG_Python_UnpackTuple(args, "icwt", 4, 4, swig_obj)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_complexT_float_t, 0 |  0 );
+  if (!SWIG_Python_UnpackTuple(args, "Wavelet_value_at", 3, 3, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Wavelet, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "icwt" "', argument " "1"" of type '" "complex< float > *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Wavelet_value_at" "', argument " "1"" of type '" "Wavelet *""'"); 
   }
-  arg1 = reinterpret_cast< complex< float > * >(argp1);
-  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  arg1 = reinterpret_cast< Wavelet * >(argp1);
+  ecode2 = SWIG_AsVal_float(swig_obj[1], &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "icwt" "', argument " "2"" of type '" "int""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Wavelet_value_at" "', argument " "2"" of type '" "float""'");
   } 
-  arg2 = static_cast< int >(val2);
-  res3 = SWIG_ConvertPtr(swig_obj[2], &argp3,SWIGTYPE_p_float, 0 |  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "icwt" "', argument " "3"" of type '" "float *""'"); 
-  }
-  arg3 = reinterpret_cast< float * >(argp3);
-  res4 = SWIG_ConvertPtr(swig_obj[3], &argp4,SWIGTYPE_p_Scales, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "icwt" "', argument " "4"" of type '" "Scales *""'"); 
-  }
-  arg4 = reinterpret_cast< Scales * >(argp4);
-  icwt(arg1,arg2,arg3,arg4);
-  resultobj = SWIG_Py_Void();
+  arg2 = static_cast< float >(val2);
+  ecode3 = SWIG_AsVal_float(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Wavelet_value_at" "', argument " "3"" of type '" "float""'");
+  } 
+  arg3 = static_cast< float >(val3);
+  result = (float)(arg1)->value_at(arg2,arg3);
+  resultobj = SWIG_From_float(static_cast< float >(result));
   return resultobj;
 fail:
   return NULL;
 }
 
 
-SWIGINTERN PyObject *_wrap_new_Wavelet(PyObject *self, PyObject *args) {
+SWIGINTERN PyObject *_wrap_Wavelet_constant(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
-  Wavelet *result = 0 ;
+  Wavelet *arg1 = (Wavelet *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  float result;
   
-  if (!SWIG_Python_UnpackTuple(args, "new_Wavelet", 0, 0, 0)) SWIG_fail;
-  result = (Wavelet *)new Wavelet();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Wavelet, SWIG_POINTER_NEW |  0 );
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Wavelet, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Wavelet_constant" "', argument " "1"" of type '" "Wavelet *""'"); 
+  }
+  arg1 = reinterpret_cast< Wavelet * >(argp1);
+  result = (float)(arg1)->constant();
+  resultobj = SWIG_From_float(static_cast< float >(result));
   return resultobj;
 fail:
   return NULL;
@@ -4588,10 +4590,6 @@ SWIGINTERN PyObject *Wavelet_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObje
   if (!SWIG_Python_UnpackTuple(args, "swigregister", 1, 1, &obj)) return NULL;
   SWIG_TypeNewClientData(SWIGTYPE_p_Wavelet, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
-}
-
-SWIGINTERN PyObject *Wavelet_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  return SWIG_Python_InitShadowInstance(args);
 }
 
 SWIGINTERN PyObject *_wrap_new_Morlet(PyObject *self, PyObject *args) {
@@ -5619,8 +5617,8 @@ SWIGINTERN PyObject *FCWT_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *arg
 }
 
 static PyMethodDef SwigMethods[] = {
-	 { "icwt", _wrap_icwt, METH_VARARGS, NULL},
-	 { "new_Wavelet", _wrap_new_Wavelet, METH_NOARGS, NULL},
+	 { "Wavelet_value_at", _wrap_Wavelet_value_at, METH_VARARGS, NULL},
+	 { "Wavelet_constant", _wrap_Wavelet_constant, METH_O, NULL},
 	 { "Wavelet_generate", _wrap_Wavelet_generate, METH_VARARGS, NULL},
 	 { "Wavelet_getSupport", _wrap_Wavelet_getSupport, METH_VARARGS, NULL},
 	 { "Wavelet_getWavelet", _wrap_Wavelet_getWavelet, METH_VARARGS, NULL},
@@ -5636,7 +5634,6 @@ static PyMethodDef SwigMethods[] = {
 	 { "Wavelet_mother_get", _wrap_Wavelet_mother_get, METH_O, NULL},
 	 { "delete_Wavelet", _wrap_delete_Wavelet, METH_O, NULL},
 	 { "Wavelet_swigregister", Wavelet_swigregister, METH_O, NULL},
-	 { "Wavelet_swiginit", Wavelet_swiginit, METH_VARARGS, NULL},
 	 { "new_Morlet", _wrap_new_Morlet, METH_O, NULL},
 	 { "Morlet_generate", _wrap_Morlet_generate, METH_VARARGS, NULL},
 	 { "Morlet_getSupport", _wrap_Morlet_getSupport, METH_VARARGS, NULL},
@@ -5683,7 +5680,6 @@ static swig_type_info _swigt__p_Morlet = {"_p_Morlet", "Morlet *", 0, 0, (void*)
 static swig_type_info _swigt__p_Scales = {"_p_Scales", "Scales *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Wavelet = {"_p_Wavelet", "Wavelet *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_complexT_float_t = {"_p_complexT_float_t", "complex< float > *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
@@ -5692,7 +5688,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Scales,
   &_swigt__p_Wavelet,
   &_swigt__p_char,
-  &_swigt__p_complexT_float_t,
   &_swigt__p_float,
 };
 
@@ -5701,7 +5696,6 @@ static swig_cast_info _swigc__p_Morlet[] = {  {&_swigt__p_Morlet, 0, 0, 0},{0, 0
 static swig_cast_info _swigc__p_Scales[] = {  {&_swigt__p_Scales, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Wavelet[] = {  {&_swigt__p_Wavelet, 0, 0, 0},  {&_swigt__p_Morlet, _p_MorletTo_p_Wavelet, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_complexT_float_t[] = {  {&_swigt__p_complexT_float_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_float[] = {  {&_swigt__p_float, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
@@ -5710,7 +5704,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Scales,
   _swigc__p_Wavelet,
   _swigc__p_char,
-  _swigc__p_complexT_float_t,
   _swigc__p_float,
 };
 

@@ -78,6 +78,7 @@ class Wavelet {
 public:
     virtual float value_at(float a, float b) = 0;
     virtual float constant() = 0;
+public:
     Wavelet() {};
     virtual void generate(float* real, float* imag, int size, float scale) { printf("ERROR [generate time complex]: Override this virtual class"); };
     virtual void generate(int size) { printf("ERROR [generate freq]: Override this virtual class"); };
@@ -92,8 +93,6 @@ public:
 
 class Morlet : public Wavelet {
 public:
-    float value_at(float a, float b) override;
-    float constant() override;
     FCWT_LIBRARY_API Morlet(float bandwidth); //frequency domain
     ~Morlet() { free(mother); };
     
@@ -101,6 +100,8 @@ public:
     void generate(float* real, float* imag, int size, float scale); //time domain
     int getSupport(float scale) { return (int)(fb*scale*3.0f); };
     void getWavelet(float scale, complex<float>* pwav, int pn);
+    float value_at(float a, float b);
+    float constant();    
     float fb;
     
 private:

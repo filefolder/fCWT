@@ -15,7 +15,7 @@ import_array();
 
 %rename(cwt) cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
 %rename(ccwt) cwt(complex<float>*pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-void icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
+%rename(icwt) icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
 
 %numpy_typemaps(complex<double> , NPY_CDOUBLE, int)
 %numpy_typemaps(complex<float> , NPY_CFLOAT , int)
@@ -34,7 +34,11 @@ void icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *
 
 enum SCALETYPE {FCWT_LINSCALES,FCWT_LOGSCALES,FCWT_LINFREQS};
 
+%ignore Wavelet::Wavelet;
 class Wavelet {
+public:
+    virtual float value_at(float a, float b) = 0;
+    virtual float constant() = 0;
 public:
     Wavelet() {};
     virtual void generate(float* real, float* imag, int size, float scale) { printf("ERROR [generate time complex]: Override this virtual class"); };
