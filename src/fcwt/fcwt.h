@@ -76,15 +76,16 @@ enum SCALETYPE {FCWT_LINSCALES,FCWT_LOGSCALES,FCWT_LINFREQS};
 
 class Wavelet {
 public:
-    virtual float value_at(float a, float b) = 0;
-    virtual float constant() = 0;
-public:
     Wavelet() {};
+    virtual ~Wavelet() {};
+
     virtual void generate(float* real, float* imag, int size, float scale) { printf("ERROR [generate time complex]: Override this virtual class"); };
     virtual void generate(int size) { printf("ERROR [generate freq]: Override this virtual class"); };
     virtual int getSupport(float scale) { printf("ERROR [getsupport]: Override this virtual class"); return 0; };
     virtual void getWavelet(float scale, complex<float>* pwav, int pn) { printf("ERROR [getsupport]: Override this virtual class"); };
-    
+    virtual float value_at(float a, float b) = 0;
+    virtual float constant() = 0;
+
     int width;
     float four_wavelen;
     bool imag_frequency, doublesided;
@@ -96,17 +97,22 @@ public:
     FCWT_LIBRARY_API Morlet(float bandwidth); //frequency domain
     ~Morlet() { free(mother); };
     
-    void generate(int size); //frequency domain
-    void generate(float* real, float* imag, int size, float scale); //time domain
-    int getSupport(float scale) { return (int)(fb*scale*3.0f); };
-    void getWavelet(float scale, complex<float>* pwav, int pn);
-    float value_at(float a, float b);
-    float constant();    
-    float fb;
+    void generate(int size) override; //frequency domain
+    void generate(float* real, float* imag, int size, float scale) override; //time domain
+    int getSupport(float scale) override { return (int)(fb*scale*3.0f); };
+    void getWavelet(float scale, complex<float>* pwav, int pn) override;
+    float value_at(float a, float b) override;
+    float constant() override;
+
+    float getFB() const { return fb; }  // Getter for fb
+    void setFB(float value) { fb = value; }  // Setter for fb, if necessary
     
 private:
+    float fb;
     float ifb, fb2;
 };
+
+
 
 class Scales {
 public:
@@ -139,7 +145,7 @@ public:
     void FCWT_LIBRARY_API cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales);
     void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, complex<float>* poutput, Scales *scales);
     void FCWT_LIBRARY_API cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-    void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
+    void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);  
     void FCWT_LIBRARY_API icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
 
     Wavelet *wavelet;

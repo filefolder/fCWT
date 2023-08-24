@@ -151,6 +151,9 @@ class FCWT(object):
 
     def ccwt(self, pcinput, scales, poutput):
         return _fcwt.FCWT_ccwt(self, pcinput, scales, poutput)
+
+    def icwt(self, ptransform, psize, preconstructed, scales):
+        return _fcwt.FCWT_icwt(self, ptransform, psize, preconstructed, scales)
     wavelet = property(_fcwt.FCWT_wavelet_get, _fcwt.FCWT_wavelet_set)
     __swig_destroy__ = _fcwt.delete_FCWT
 

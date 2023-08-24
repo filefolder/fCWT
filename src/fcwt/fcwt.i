@@ -14,7 +14,7 @@ import_array();
 %}
 
 %rename(cwt) cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-%rename(ccwt) cwt(complex<float>*pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
+%rename(ccwt) cwt(complex<float>* pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
 %rename(icwt) icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
 
 %numpy_typemaps(complex<double> , NPY_CDOUBLE, int)
@@ -85,6 +85,6 @@ public:
     void create_FFT_optimization_plan(int pmaxsize, std::string poptimizationflags);
     void cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
     void cwt(complex<float>*pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-
+    void icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
     Wavelet *wavelet;
 };
