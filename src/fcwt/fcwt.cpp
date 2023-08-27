@@ -553,10 +553,9 @@ void FCWT::icwt(complex<float>* ptransform, Scales *scales, float* preconstructe
     for (int a = 0; a < scales->nscales; a++) {
         float current_scale = scales_values[a];
 
-        // Reset fft_in
+        // Reset fft_in with each wavelet value
         for (int i = 0; i < psize; i++) {
-            fft_in[i] = 0.0;
-            dynamic_cast<Morlet*>(wavelet)->value_in_frequency_domain(current_scale, i * (1.0f/psize));
+            fft_in[i] = dynamic_cast<Morlet*>(wavelet)->value_in_frequency_domain(current_scale, i * (1.0f/psize));
         }
 
         // Apply FFT to convert from frequency domain to time domain
@@ -569,7 +568,7 @@ void FCWT::icwt(complex<float>* ptransform, Scales *scales, float* preconstructe
     }
 
     // Normalize the reconstructed signal
-    float normalization_factor = 1.0f / (wavelet->constant()); // * scales->nscales);
+    float normalization_factor = 1.0f / (wavelet->constant()); // unclear if this is needed * scales->nscales);
     for (int i = 0; i < psize; i++) {
         preconstructed[i] *= normalization_factor;
     }
