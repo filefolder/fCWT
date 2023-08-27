@@ -15,16 +15,26 @@ import_array();
 
 %rename(cwt) cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
 %rename(ccwt) cwt(complex<float>* pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-%rename(icwt) icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
+%rename(icwt) icwt(complex<float>* ptransform, int pn1, int pn2, Scales *scales, float* preconstructed, int psize);
 
 %numpy_typemaps(complex<double> , NPY_CDOUBLE, int)
 %numpy_typemaps(complex<float> , NPY_CFLOAT , int)
 
+//orig
 %apply (float* IN_ARRAY1, int DIM1) {(float* pinput, int psize)};
 %apply (complex<float>* IN_ARRAY1, int DIM1) {(complex<float>*pcinput, int psize)};
 %apply (float* INPLACE_ARRAY1, int DIM1) {(float *pfreqs, int pnf)};
 %apply (complex<float>* INPLACE_ARRAY2, int DIM1, int DIM2) {(complex<float>* poutput, int pn1, int pn2)};
 %apply (complex<float>* INPLACE_ARRAY1, int DIM1) {(complex<float>* pwav, int pn)};
+
+//icwt
+// Typemap for 2D input array of complex numbers
+%apply (complex<float>* IN_ARRAY2, int DIM1, int DIM2) {(complex<float>* ptransform, int pn1, int pn2)};
+
+// Typemap for 1D in-place array of floats
+%apply (float* INPLACE_ARRAY1, int DIM1) {(float* preconstructed, int psize)};
+
+
 
 %typemap(check) float f0, float f1, int fn {
   if ($1 <= 0) {
@@ -84,7 +94,7 @@ public:
     
     void create_FFT_optimization_plan(int pmaxsize, std::string poptimizationflags);
     void cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-    void cwt(complex<float>*pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-    void icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
+    void cwt(complex<float> *pcinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
+    void icwt(complex<float> *ptransform, int pn1, int pn2, Scales *scales, float* preconstructed, int psize);    
     Wavelet *wavelet;
 };

@@ -2986,10 +2986,9 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_Scales swig_types[2]
 #define SWIGTYPE_p_Wavelet swig_types[3]
 #define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_complexT_float_t swig_types[5]
-#define SWIGTYPE_p_float swig_types[6]
-static swig_type_info *swig_types[8];
-static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
+#define SWIGTYPE_p_float swig_types[5]
+static swig_type_info *swig_types[7];
+static swig_module_info swig_module = {swig_types, 6, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -5537,50 +5536,67 @@ SWIGINTERN PyObject *_wrap_FCWT_icwt(PyObject *self, PyObject *args) {
   FCWT *arg1 = (FCWT *) 0 ;
   complex< float > *arg2 = (complex< float > *) 0 ;
   int arg3 ;
-  float *arg4 = (float *) 0 ;
+  int arg4 ;
   Scales *arg5 = (Scales *) 0 ;
+  float *arg6 = (float *) 0 ;
+  int arg7 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
+  PyArrayObject *array2 = NULL ;
+  int is_new_object2 = 0 ;
   void *argp5 = 0 ;
   int res5 = 0 ;
-  PyObject *swig_obj[5] ;
+  PyArrayObject *array6 = NULL ;
+  int i6 = 1 ;
+  PyObject *swig_obj[4] ;
   
-  if (!SWIG_Python_UnpackTuple(args, "FCWT_icwt", 5, 5, swig_obj)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "FCWT_icwt", 4, 4, swig_obj)) SWIG_fail;
   res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_FCWT, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "FCWT_icwt" "', argument " "1"" of type '" "FCWT *""'"); 
   }
   arg1 = reinterpret_cast< FCWT * >(argp1);
-  res2 = SWIG_ConvertPtr(swig_obj[1], &argp2,SWIGTYPE_p_complexT_float_t, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "FCWT_icwt" "', argument " "2"" of type '" "complex< float > *""'"); 
+  {
+    npy_intp size[2] = {
+      -1, -1 
+    };
+    array2 = obj_to_array_contiguous_allow_conversion(swig_obj[1], NPY_CFLOAT,
+      &is_new_object2);
+    if (!array2 || !require_dimensions(array2, 2) ||
+      !require_size(array2, size, 2)) SWIG_fail;
+    arg2 = (complex<float>*) array_data(array2);
+    arg3 = (int) array_size(array2,0);
+    arg4 = (int) array_size(array2,1);
   }
-  arg2 = reinterpret_cast< complex< float > * >(argp2);
-  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "FCWT_icwt" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = static_cast< int >(val3);
-  res4 = SWIG_ConvertPtr(swig_obj[3], &argp4,SWIGTYPE_p_float, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "FCWT_icwt" "', argument " "4"" of type '" "float *""'"); 
-  }
-  arg4 = reinterpret_cast< float * >(argp4);
-  res5 = SWIG_ConvertPtr(swig_obj[4], &argp5,SWIGTYPE_p_Scales, 0 |  0 );
+  res5 = SWIG_ConvertPtr(swig_obj[2], &argp5,SWIGTYPE_p_Scales, 0 |  0 );
   if (!SWIG_IsOK(res5)) {
     SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "FCWT_icwt" "', argument " "5"" of type '" "Scales *""'"); 
   }
   arg5 = reinterpret_cast< Scales * >(argp5);
-  (arg1)->icwt(arg2,arg3,arg4,arg5);
+  {
+    array6 = obj_to_array_no_conversion(swig_obj[3], NPY_FLOAT);
+    if (!array6 || !require_dimensions(array6,1) || !require_contiguous(array6)
+      || !require_native(array6)) SWIG_fail;
+    arg6 = (float*) array_data(array6);
+    arg7 = 1;
+    for (i6=0; i6 < array_numdims(array6); ++i6) arg7 *= array_size(array6,i6);
+  }
+  (arg1)->icwt(arg2,arg3,arg4,arg5,arg6,arg7);
   resultobj = SWIG_Py_Void();
+  {
+    if (is_new_object2 && array2)
+    {
+      Py_DECREF(array2); 
+    }
+  }
   return resultobj;
 fail:
+  {
+    if (is_new_object2 && array2)
+    {
+      Py_DECREF(array2); 
+    }
+  }
   return NULL;
 }
 
@@ -5735,7 +5751,6 @@ static swig_type_info _swigt__p_Morlet = {"_p_Morlet", "Morlet *", 0, 0, (void*)
 static swig_type_info _swigt__p_Scales = {"_p_Scales", "Scales *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Wavelet = {"_p_Wavelet", "Wavelet *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_complexT_float_t = {"_p_complexT_float_t", "complex< float > *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
@@ -5744,7 +5759,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Scales,
   &_swigt__p_Wavelet,
   &_swigt__p_char,
-  &_swigt__p_complexT_float_t,
   &_swigt__p_float,
 };
 
@@ -5753,7 +5767,6 @@ static swig_cast_info _swigc__p_Morlet[] = {  {&_swigt__p_Morlet, 0, 0, 0},{0, 0
 static swig_cast_info _swigc__p_Scales[] = {  {&_swigt__p_Scales, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Wavelet[] = {  {&_swigt__p_Wavelet, 0, 0, 0},  {&_swigt__p_Morlet, _p_MorletTo_p_Wavelet, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_complexT_float_t[] = {  {&_swigt__p_complexT_float_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_float[] = {  {&_swigt__p_float, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
@@ -5762,7 +5775,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Scales,
   _swigc__p_Wavelet,
   _swigc__p_char,
-  _swigc__p_complexT_float_t,
   _swigc__p_float,
 };
 

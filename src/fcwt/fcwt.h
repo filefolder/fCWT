@@ -97,6 +97,7 @@ public:
     FCWT_LIBRARY_API Morlet(float bandwidth); //frequency domain
     ~Morlet() { free(mother); };
     
+    complex<float> value_in_frequency_domain(float scale, float frequency) const;
     void generate(int size) override; //frequency domain
     void generate(float* real, float* imag, int size, float scale) override; //time domain
     int getSupport(float scale) override { return (int)(fb*scale*3.0f); };
@@ -104,9 +105,11 @@ public:
     float value_at(float a, float b) override;
     float constant() override;
     float fb;
+    float get_sigma() const { return sigma; }
     
 private:
     float ifb, fb2;
+    float sigma;
 };
 
 
@@ -140,10 +143,11 @@ public:
     void FCWT_LIBRARY_API create_FFT_optimization_plan(int pmaxsize, int poptimizationflags);
     void FCWT_LIBRARY_API create_FFT_optimization_plan(int pmaxsize, string poptimizationflags);
     void FCWT_LIBRARY_API cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales);
-    void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, complex<float>* poutput, Scales *scales);
     void FCWT_LIBRARY_API cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
-    void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);  
-    void FCWT_LIBRARY_API icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales);
+    void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, complex<float>* poutput, Scales *scales);
+    void FCWT_LIBRARY_API cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2);
+    void FCWT_LIBRARY_API icwt(complex<float> *ptransform, Scales *scales, float* preconstructed, int psize);
+    void FCWT_LIBRARY_API icwt(complex<float> *ptransform, int pn1, int pn2, Scales *scales, float* preconstructed, int psize);
 
     Wavelet *wavelet;
     

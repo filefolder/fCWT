@@ -104,6 +104,14 @@ void Morlet::getWavelet(float scale, complex<float>* pwav, int pn) {
 	delete imag;
 };
 
+
+complex<float> Morlet::value_in_frequency_domain(float scale, float frequency) const {
+    if (frequency < 0) return 0;  // Morlet is real and even, so negative frequencies are zero
+    float sigma = this->get_sigma();
+    float x = frequency * scale;
+    return exp(-0.5 * pow((x - sigma), 2));  // Gaussian window modulating the sinusoid
+}
+
 //==============================================================//
 //================== Scales =====================================//
 //==============================================================//
@@ -529,12 +537,54 @@ void FCWT::cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales
 }
 
 
-void FCWT::cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales) {
-    cwt(pinput,psize,poutput,scales,false);
+void FCWT::icwt(complex<float>* ptransform, Scales *scales, float* preconstructed, int psize) {
+    // Allocate space for the FFT input (time domain) and output (frequency domain)
+    complex<float>* fft_in = new complex<float>[psize];
+    complex<float>* fft_out = new complex<float>[psize];
+    
+    // Allocate space for the scales values
+    float* scales_values = new float[scales->nscales];
+    scales->getScales(scales_values, scales->nscales);
+
+    // FFTW3 plan
+    fftwf_plan plan = fftwf_plan_dft_1d(psize, reinterpret_cast<fftwf_complex*>(fft_in), reinterpret_cast<fftwf_complex*>(fft_out), FFTW_BACKWARD, FFTW_ESTIMATE);
+
+    // Placeholder for inverse CWT implementation
+    for (int a = 0; a < scales->nscales; a++) {
+        float current_scale = scales_values[a];
+
+        // Reset fft_in
+        for (int i = 0; i < psize; i++) {
+            fft_in[i] = 0.0;
+            dynamic_cast<Morlet*>(wavelet)->value_in_frequency_domain(current_scale, i * (1.0f/psize));
+        }
+
+        // Apply FFT to convert from frequency domain to time domain
+        fftwf_execute(plan);
+
+        // Multiply with the wavelet transform and accumulate to the reconstructed signal
+        for (int b = 0; b < psize; b++) {
+            preconstructed[b] += real(fft_out[b] * ptransform[b * scales->nscales + a]) / (current_scale * current_scale);
+        }
+    }
+
+    // Normalize the reconstructed signal
+    float normalization_factor = 1.0f / (wavelet->constant()); // * scales->nscales);
+    for (int i = 0; i < psize; i++) {
+        preconstructed[i] *= normalization_factor;
+    }
+
+    // Cleanup
+    fftwf_destroy_plan(plan);
+    delete[] fft_in;
+    delete[] fft_out;
+    delete[] scales_values;
 }
 
-void FCWT::cwt(complex<float> *pinput, int psize, complex<float>* poutput, Scales *scales) {
-    cwt((float*)pinput,psize,poutput,scales,true);
+
+
+void FCWT::cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales) {
+    cwt(pinput,psize,poutput,scales,false);
 }
 
 void FCWT::cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2) {
@@ -542,33 +592,20 @@ void FCWT::cwt(float *pinput, int psize, Scales *scales, complex<float>* poutput
     cwt(pinput,psize,poutput,scales);
 }
 
+void FCWT::cwt(complex<float> *pinput, int psize, complex<float>* poutput, Scales *scales) {
+    cwt((float*)pinput,psize,poutput,scales,true);
+}
+
 void FCWT::cwt(complex<float> *pinput, int psize, Scales *scales, complex<float>* poutput, int pn1, int pn2) {
     assert((psize*scales->nscales) == (pn1*pn2));
     cwt(pinput,psize,poutput,scales);
 }
 
-void FCWT::icwt(complex<float>* ptransform, int psize, float* preconstructed, Scales *scales) {
-    // Placeholder for inverse CWT implementation
-    complex<float> morlet_conj;
-
-    // Loop over all scales and translations to reconstruct the signal
-    for (int a = 0; a < scales->nscales; a++) {
-        for (int b = 0; b < psize; b++) {
-            // Compute the Morlet wavelet complex conjugate at this scale and translation
-            morlet_conj = conj(wavelet->value_at(a, b));  // Assuming a method 'value_at' exists in Wavelet class
-            
-            // Use the Morlet wavelet function and its complex conjugate to compute contributions
-            // to the reconstructed signal at each scale and translation
-            preconstructed[b] += real(ptransform[b * scales->nscales + a] * morlet_conj) / (a * a);
-        }
-    }
-
-    // Normalize the reconstructed signal
-    float normalization_factor = 1.0f / (wavelet->constant() * scales->nscales);  // Assuming a method 'constant' exists in Wavelet class
-    for (int i = 0; i < psize; i++) {
-        preconstructed[i] *= normalization_factor;
-    }
+void FCWT::icwt(complex<float>* ptransform, int pn1, int pn2, Scales *scales, float* preconstructed, int psize) {
+    assert(psize == pn1 * pn2);  // This checks the 2D shape against the scales
+    icwt(ptransform,scales,preconstructed,psize);
 }
+
 
 float Morlet::value_at(float a, float b) {
     float toradians = (2 * PI) / (float)width;
@@ -578,9 +615,9 @@ float Morlet::value_at(float a, float b) {
     return (norm * exp(tmp1));
 }
 
+
 float Morlet::constant() {
     // Placeholder for the normalization constant for the Morlet wavelet
     // This value can be obtained from wavelet literature or computed empirically
-    return 0.75112554f;  // This should be close but may differ slightly depending on freq... TODO
-
+    return 1.0f;
 }
